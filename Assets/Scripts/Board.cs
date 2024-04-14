@@ -1,9 +1,13 @@
+using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Board
 {
+    public static List<string> pastMoves = new List<string>();
+
     public static bool hasChanged = true;
     public static int[] Tiles = new int[64];
     public static int[] tempTiles = new int[64];
@@ -61,7 +65,7 @@ public class Board
         }
     }
 
-    public static void LoadPositionFromFen(string fen, bool whiteToMove)
+    public static void LoadPositionFromFEN(string fen)
     {
         for (int i = 0; i < 64; i++)
         {
@@ -79,6 +83,26 @@ public class Board
         };
 
         string fenBoard = fen.Split(' ')[0];
+        bool toMoveIncluded = true;
+
+        try
+        {
+            string playerMove = fen.Split(' ')[1];
+
+            if (playerMove[0] == 'w')
+            {
+                whitesMove = true;
+            }
+            else if (playerMove[0] == 'b')
+            {
+                whitesMove = false;
+            }
+        }
+        catch (Exception e)
+        {
+            toMoveIncluded = false;
+        }
+
         int file = 0, rank = 7;
 
         foreach (char symbol in fenBoard)
@@ -104,8 +128,6 @@ public class Board
             }
         }
 
-        whitesMove = whiteToMove;
-
         if (Tiles[4] % 8 != 1 || (Tiles[4] >> 3) != 1) { whiteCanCastleShort = false; whiteCanCastleLong = false; }
         else { whiteCanCastleShort = true; whiteCanCastleLong = true; }
         if (Tiles[60] % 8 != 1 || (Tiles[60] >> 3) != 2) { blackCanCastleShort = false; blackCanCastleLong = false; }
@@ -120,6 +142,84 @@ public class Board
         else { blackCanCastleShort = true; }
 
         hasChanged = true;
+    }
+
+    public static string GenerateFEN()
+    {
+        StringBuilder fenBuilder = new StringBuilder();
+
+        for (int rank = 7; rank >= 0; rank--)
+        {
+            int emptyCount = 0;
+            for (int file = 0; file < 8; file++)
+            {
+                int index = rank * 8 + file;
+                int piece = Tiles[index];
+                if (piece == -1)
+                {
+                    emptyCount++;
+                }
+                else
+                {
+                    if (emptyCount > 0)
+                    {
+                        fenBuilder.Append(emptyCount);
+                        emptyCount = 0;
+                    }
+                    char pieceSymbol = PieceToSymbol(piece);
+                    fenBuilder.Append(pieceSymbol);
+                }
+            }
+            if (emptyCount > 0)
+            {
+                fenBuilder.Append(emptyCount);
+            }
+            if (rank > 0)
+            {
+                fenBuilder.Append('/');
+            }
+        }
+
+        fenBuilder.Append(' ');
+        fenBuilder.Append(whitesMove ? 'w' : 'b');
+
+        return fenBuilder.ToString();
+    }
+
+    private static char PieceToSymbol(int piece)
+    {
+        char symbol;
+
+        switch (piece & 0b111)
+        {
+            case Piece.King:
+                symbol = 'K';
+                break;
+            case Piece.Queen:
+                symbol = 'Q';
+                break;
+            case Piece.Rook:
+                symbol = 'R';
+                break;
+            case Piece.Bishop:
+                symbol = 'B';
+                break;
+            case Piece.Knight:
+                symbol = 'N';
+                break;
+            case Piece.Pawn:
+                symbol = 'P';
+                break;
+            default:
+                throw new ArgumentException("Invalid piece type");
+        }
+
+        if ((piece & Piece.Black) != 0)
+        {
+            symbol = char.ToLower(symbol);
+        }
+
+        return symbol;
     }
 
     public static int[] GetLegalMoves(int position)
@@ -1480,5 +1580,7 @@ public class Board
                 else { whitesMove = true; }
             }
         }
+
+        pastMoves.Add(GenerateFEN());
     }
 }

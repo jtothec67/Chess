@@ -36,7 +36,8 @@ public class GraphicalBoard : MonoBehaviour
 
 
     public TMP_InputField inputFEN;
-    public TMP_Dropdown whosMove;
+
+    public TMP_InputField outputFEN;
 
 
     // Start is called before the first frame update
@@ -46,7 +47,10 @@ public class GraphicalBoard : MonoBehaviour
         CreateGraphicalBoard();
         Board.GenerateSquaresToEdge();
 
-        Board.LoadPositionFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true);
+        Board.LoadPositionFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
+
+        Board.pastMoves.Clear();
+        Board.pastMoves.Add(Board.GenerateFEN());
     }
 
     // Update is called once per frame
@@ -93,18 +97,37 @@ public class GraphicalBoard : MonoBehaviour
         }
     }
 
+    public void BackAMove()
+    {
+        if (Board.pastMoves.Count == 1)
+        {
+            return;
+        }
+
+        Board.pastMoves.RemoveAt(Board.pastMoves.Count - 1); // Removes current position from past moves so can never go forward. Change how this works at some point. Maybe currentPosPointer to keep track of how far back we are in the list
+        Board.LoadPositionFromFEN(Board.pastMoves[Board.pastMoves.Count - 1]);
+        Board.hasChanged = true;
+    }
+
     public void ResetBoard()
     {
-        Board.LoadPositionFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true);
+        Board.LoadPositionFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
+
+        Board.pastMoves.Clear();
+        Board.pastMoves.Add(Board.GenerateFEN());
     }
 
     public void LoadFENOnBoard()
     {
-        bool personToMove = true;
-        
-        if (whosMove.value == 1) personToMove = false;
+        Board.pastMoves.Clear();
+        Board.LoadPositionFromFEN(inputFEN.text);
+        Board.pastMoves.Add(Board.GenerateFEN());
+    }
 
-        Board.LoadPositionFromFen(inputFEN.text, personToMove);
+    public void GenerateFENFromBoard()
+    {
+        string fen = Board.GenerateFEN();
+        outputFEN.text = fen;
     }
 
     void HighlightMoves()

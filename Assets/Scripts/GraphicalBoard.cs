@@ -143,6 +143,9 @@ public class GraphicalBoard : MonoBehaviour
         Board.pastMoves.Clear();
         Board.LoadPositionFromFEN(inputFEN.text);
         Board.pastMoves.Add(Board.GenerateFEN());
+
+        Board.activePosition = 0;
+        Board.displayPosition = 0;
     }
 
     public void GenerateFENFromBoard()

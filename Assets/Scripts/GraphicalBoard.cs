@@ -14,6 +14,8 @@ public class GraphicalBoard : MonoBehaviour
 
     public TMP_Text gameText;
 
+    public GameObject currentPosText;
+
     private GameObject[] graphicSquares;
     private int currentSquare = 0;
 
@@ -76,6 +78,9 @@ public class GraphicalBoard : MonoBehaviour
             }
 
             Checkmate();
+
+            if (Board.displayPosition == Board.activePosition) currentPosText.SetActive(true);
+            else currentPosText.SetActive(false);
         }
 
         if (!justHighlighted && Board.tileSelected != -1)
@@ -99,13 +104,26 @@ public class GraphicalBoard : MonoBehaviour
 
     public void BackAMove()
     {
-        if (Board.pastMoves.Count == 1)
+        if (Board.displayPosition <= 0)
         {
             return;
         }
 
-        Board.pastMoves.RemoveAt(Board.pastMoves.Count - 1); // Removes current position from past moves so can never go forward. Change how this works at some point. Maybe currentPosPointer to keep track of how far back we are in the list
-        Board.LoadPositionFromFEN(Board.pastMoves[Board.pastMoves.Count - 1]);
+        //Board.pastMoves.RemoveAt(Board.pastMoves.Count - 1);
+        Board.displayPosition -= 1;
+        Board.LoadPositionFromFEN(Board.pastMoves[Board.displayPosition]);
+        Board.hasChanged = true;
+    }
+
+    public void ForwardAMove()
+    {
+        if (Board.pastMoves.Count == Board.displayPosition + 1)
+        {
+            return;
+        }
+
+        Board.displayPosition += 1;
+        Board.LoadPositionFromFEN(Board.pastMoves[Board.displayPosition]);
         Board.hasChanged = true;
     }
 
@@ -115,6 +133,9 @@ public class GraphicalBoard : MonoBehaviour
 
         Board.pastMoves.Clear();
         Board.pastMoves.Add(Board.GenerateFEN());
+
+        Board.activePosition = 0;
+        Board.displayPosition = 0;
     }
 
     public void LoadFENOnBoard()

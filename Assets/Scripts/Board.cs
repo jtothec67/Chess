@@ -7,6 +7,8 @@ using UnityEngine;
 public class Board
 {
     public static List<string> pastMoves = new List<string>();
+    public static int displayPosition = 0;
+    public static int activePosition = 0;
 
     public static bool hasChanged = true;
     public static int[] Tiles = new int[64];
@@ -1579,6 +1581,19 @@ public class Board
                 if (whitesMove) { whitesMove = false; }
                 else { whitesMove = true; }
             }
+        }
+
+        if (displayPosition != activePosition)
+        {
+            pastMoves.RemoveRange(displayPosition + 1, pastMoves.Count - displayPosition - 1);
+
+            displayPosition += 1;
+            activePosition = displayPosition;
+        }
+        else
+        {
+            activePosition += 1;
+            displayPosition += 1;
         }
 
         pastMoves.Add(GenerateFEN());

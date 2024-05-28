@@ -16,7 +16,7 @@ public class GraphicalBoard : MonoBehaviour
 
     public GameObject currentPosText;
 
-    private GameObject[] graphicSquares;
+    private GameObject[] graphicSquares = new GameObject[64];
     private int currentSquare = 0;
 
     private bool justHighlighted = false;
@@ -41,15 +41,24 @@ public class GraphicalBoard : MonoBehaviour
 
     public TMP_InputField outputFEN;
 
+    private int tileLastSelected = -1;
+
+    private string startPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+
+    private bool isDragging = false;
+
+    private int pieceTileBeingDragged = -1;
+    private int pieceOnTile = 0;
+
+    private GameObject draggedPiece;
 
     // Start is called before the first frame update
     void Start()
     {
-        graphicSquares = new GameObject[64];
         CreateGraphicalBoard();
         Board.GenerateSquaresToEdge();
 
-        Board.LoadPositionFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
+        Board.LoadPositionFromFEN(startPos);
 
         Board.pastMoves.Clear();
         Board.pastMoves.Add(Board.GenerateFEN());
@@ -58,6 +67,51 @@ public class GraphicalBoard : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Raycast to detect the tile the mouse is currently over
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+            if (hit.collider != null)
+            {
+                Tile tileUpsScript = hit.collider.GetComponent<Tile>();
+
+                if (tileUpsScript != null)
+                {
+                    pieceTileBeingDragged = tileUpsScript.tileIndex;
+                    pieceOnTile = Board.Tiles[tileUpsScript.tileIndex];
+
+                    draggedPiece = DecideDraggedPiece(pieceOnTile);
+                    if (draggedPiece != null)
+                    {
+                        draggedPiece.tag = "DontDestroy";
+
+                        isDragging = true;
+                        Board.hasChanged = true;
+                    }
+                    
+                }
+            }
+        }
+
+        if (isDragging)
+        {
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            draggedPiece.transform.position = new Vector3(mousePosition.x, mousePosition.y, -3f);
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            Destroy(draggedPiece);
+            draggedPiece = null;
+            pieceTileBeingDragged = -1;
+
+            isDragging = false;
+            Board.hasChanged = true;
+        }
+
         if (Board.hasChanged)
         {
             Board.hasChanged = false;
@@ -74,6 +128,7 @@ public class GraphicalBoard : MonoBehaviour
 
             for (int i = 0; i < Board.Tiles.Length; i++)
             {
+                if (i == pieceTileBeingDragged) continue;
                 DisplayPiece(Board.Tiles[i], i);
             }
 
@@ -89,7 +144,7 @@ public class GraphicalBoard : MonoBehaviour
 
             HighlightMoves();
         }
-        else if (!Board.pieceSelected)
+        else if (Board.tileSelected == -1 || tileLastSelected != Board.tileSelected)
         {
             GameObject[] highlights = GameObject.FindGameObjectsWithTag("Highlight");
 
@@ -100,6 +155,8 @@ public class GraphicalBoard : MonoBehaviour
 
             justHighlighted = false;
         }
+
+        tileLastSelected = Board.tileSelected;
     }
 
     public void BackAMove()
@@ -129,7 +186,7 @@ public class GraphicalBoard : MonoBehaviour
 
     public void ResetBoard()
     {
-        Board.LoadPositionFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
+        Board.LoadPositionFromFEN(startPos);
 
         Board.pastMoves.Clear();
         Board.pastMoves.Add(Board.GenerateFEN());
@@ -307,6 +364,70 @@ public class GraphicalBoard : MonoBehaviour
                 piece.transform.position = new Vector3(piece.transform.position.x, piece.transform.position.y, -1f);
             }
         }
+    }
+
+    GameObject DecideDraggedPiece(int pieceInt)
+    {
+        if (pieceInt == 0) return null;
+
+        GameObject piece = null;
+
+        if ((pieceInt >> 3) == 1)
+        {
+            if (pieceInt % 8 == 1)
+            {
+                piece = Instantiate(wk, null);
+            }
+            else if (pieceInt % 8 == 2)
+            {
+                piece = Instantiate(wp, null);
+            }
+            else if (pieceInt % 8 == 3)
+            {
+                piece = Instantiate(wn, null);
+            }
+            else if (pieceInt % 8 == 4)
+            {
+                piece = Instantiate(wb, null);
+            }
+            else if (pieceInt % 8 == 5)
+            {
+                piece = Instantiate(wr, null);
+            }
+            else if (pieceInt % 8 == 6)
+            {
+                piece = Instantiate(wq, null);
+            }
+        }
+        else
+        {
+            if (pieceInt % 8 == 1)
+            {
+                piece = Instantiate(bk, null);
+            }
+            else if (pieceInt % 8 == 2)
+            {
+                piece = Instantiate(bp, null);
+            }
+            else if (pieceInt % 8 == 3)
+            {
+                piece = Instantiate(bn, null);
+            }
+            else if (pieceInt % 8 == 4)
+            {
+                piece = Instantiate(bb, null);
+            }
+            else if (pieceInt % 8 == 5)
+            {
+                piece = Instantiate(br, null);
+            }
+            else if (pieceInt % 8 == 6)
+            {
+                piece = Instantiate(bq, null);
+            }
+        }
+
+        return piece;
     }
 
     void CreateGraphicalBoard()

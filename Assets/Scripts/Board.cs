@@ -16,6 +16,8 @@ public class Board
 
     public static bool pieceSelected = false;
     public static int tileSelected = -1;
+    public static int mouseDownTile = -1;
+    public static int mouseUpTile = -1;
 
     public static bool whitesMove = true;
 
@@ -1383,8 +1385,10 @@ public class Board
         return true;
     }
 
-    public static void MovePiece(int startingIndex, int targetIndex)
+    public static bool MovePiece(int startingIndex, int targetIndex)
     {
+        if (startingIndex == -1) return false;
+
         int[] legalMoves = GetLegalMoves(startingIndex);
 
         bool valid = false;
@@ -1393,194 +1397,193 @@ public class Board
             if (legalMoves[i] == targetIndex) valid = true;
         }
 
+        if (!valid) return false;
 
-        if (valid)
+
+        if (Tiles[startingIndex] % 8 == 2 && targetIndex == startingIndex + 16 && whitesMove)
         {
-            if (Tiles[startingIndex] % 8 == 2 && targetIndex == startingIndex + 16 && whitesMove)
-            {
-                enPassentable = targetIndex;
-            }
-            else if (Tiles[startingIndex] % 8 == 2 && targetIndex == startingIndex - 16 && !whitesMove)
-            {
-                enPassentable = targetIndex;
-            }
-            else
-            {
-                enPassentable = -1;
-            }
+            enPassentable = targetIndex;
+        }
+        else if (Tiles[startingIndex] % 8 == 2 && targetIndex == startingIndex - 16 && !whitesMove)
+        {
+            enPassentable = targetIndex;
+        }
+        else
+        {
+            enPassentable = -1;
+        }
 
-            if (targetIndex < 8 && Tiles[startingIndex] % 8 == 2)
-            {
-                var movingPiece = 22;
+        if (targetIndex < 8 && Tiles[startingIndex] % 8 == 2)
+        {
+            var movingPiece = 22;
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (targetIndex > 55 && Tiles[startingIndex] % 8 == 2)
-            {
-                var movingPiece = 14;
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (targetIndex > 55 && Tiles[startingIndex] % 8 == 2)
+        {
+            var movingPiece = 14;
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (Tiles[startingIndex] % 8 == 2 && Tiles[targetIndex] == -1 && whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (Tiles[startingIndex] % 8 == 2 && Tiles[targetIndex] == -1 && whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
-                Tiles[targetIndex - 8] = -1;
+            Tiles[targetIndex - 8] = -1;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (Tiles[startingIndex] % 8 == 2 && Tiles[targetIndex] == -1 && !whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (Tiles[startingIndex] % 8 == 2 && Tiles[targetIndex] == -1 && !whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
-                Tiles[targetIndex + 8] = -1;
+            Tiles[targetIndex + 8] = -1;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (whiteCanCastleShort && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex + 2 && whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (whiteCanCastleShort && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex + 2 && whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
 
-                var movingRook = Tiles[startingIndex +3];
+            var movingRook = Tiles[startingIndex +3];
 
-                Tiles[startingIndex + 3] = -1;
+            Tiles[startingIndex + 3] = -1;
 
-                Tiles[startingIndex + 1] = movingRook;
+            Tiles[startingIndex + 1] = movingRook;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                whiteCanCastleShort = false;
-                whiteCanCastleLong = false;
+            whiteCanCastleShort = false;
+            whiteCanCastleLong = false;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (whiteCanCastleLong && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex - 2 && whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (whiteCanCastleLong && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex - 2 && whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
-
-
-                var movingRook = Tiles[startingIndex - 4];
-
-                Tiles[startingIndex - 4] = -1;
-
-                Tiles[startingIndex - 1] = movingRook;
-
-                hasChanged = true;
-
-                whiteCanCastleShort = false;
-                whiteCanCastleLong = false;
-
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (blackCanCastleShort && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex + 2 && !whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
-
-                Tiles[startingIndex] = -1;
-
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
 
-                var movingRook = Tiles[startingIndex + 3];
+            var movingRook = Tiles[startingIndex - 4];
 
-                Tiles[startingIndex + 3] = -1;
+            Tiles[startingIndex - 4] = -1;
 
-                Tiles[startingIndex + 1] = movingRook;
+            Tiles[startingIndex - 1] = movingRook;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                blackCanCastleShort = false;
-                blackCanCastleLong = false;
+            whiteCanCastleShort = false;
+            whiteCanCastleLong = false;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else if (blackCanCastleLong && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex - 2 && !whitesMove)
-            {
-                var movingPiece = Tiles[startingIndex];
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (blackCanCastleShort && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex + 2 && !whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                Tiles[startingIndex] = -1;
+            Tiles[startingIndex] = -1;
 
-                Tiles[targetIndex] = movingPiece;
+            Tiles[targetIndex] = movingPiece;
 
 
-                var movingRook = Tiles[startingIndex - 4];
+            var movingRook = Tiles[startingIndex + 3];
 
-                Tiles[startingIndex - 4] = -1;
+            Tiles[startingIndex + 3] = -1;
 
-                Tiles[startingIndex - 1] = movingRook;
+            Tiles[startingIndex + 1] = movingRook;
 
-                hasChanged = true;
+            hasChanged = true;
 
-                blackCanCastleShort = false;
-                blackCanCastleLong = false;
+            blackCanCastleShort = false;
+            blackCanCastleLong = false;
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
-            else
-            {
-                if (whitesMove && Tiles[startingIndex] % 8 == 1) whiteCanCastleShort = false; whiteCanCastleLong = false;
-                if (!whitesMove && Tiles[startingIndex] % 8 == 1) blackCanCastleShort = false; blackCanCastleLong = false;
-                if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 0) whiteCanCastleLong = false;
-                if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 7) whiteCanCastleShort = false;
-                if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 56) blackCanCastleLong = false;
-                if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 63) blackCanCastleShort = false;
-                if (targetIndex == 0) whiteCanCastleLong = false;
-                if (targetIndex == 7) whiteCanCastleShort = false;
-                if (targetIndex == 56) blackCanCastleLong = false;
-                if (targetIndex == 63) blackCanCastleShort = false;
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else if (blackCanCastleLong && Tiles[startingIndex] % 8 == 1 && targetIndex == startingIndex - 2 && !whitesMove)
+        {
+            var movingPiece = Tiles[startingIndex];
 
-                var movingPiece = Tiles[startingIndex];
+            Tiles[startingIndex] = -1;
 
-                Tiles[startingIndex] = -1;
+            Tiles[targetIndex] = movingPiece;
 
-                Tiles[targetIndex] = movingPiece;
 
-                hasChanged = true;
+            var movingRook = Tiles[startingIndex - 4];
 
-                if (whitesMove) { whitesMove = false; }
-                else { whitesMove = true; }
-            }
+            Tiles[startingIndex - 4] = -1;
+
+            Tiles[startingIndex - 1] = movingRook;
+
+            hasChanged = true;
+
+            blackCanCastleShort = false;
+            blackCanCastleLong = false;
+
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
+        }
+        else
+        {
+            if (whitesMove && Tiles[startingIndex] % 8 == 1) whiteCanCastleShort = false; whiteCanCastleLong = false;
+            if (!whitesMove && Tiles[startingIndex] % 8 == 1) blackCanCastleShort = false; blackCanCastleLong = false;
+            if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 0) whiteCanCastleLong = false;
+            if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 7) whiteCanCastleShort = false;
+            if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 56) blackCanCastleLong = false;
+            if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 63) blackCanCastleShort = false;
+            if (targetIndex == 0) whiteCanCastleLong = false;
+            if (targetIndex == 7) whiteCanCastleShort = false;
+            if (targetIndex == 56) blackCanCastleLong = false;
+            if (targetIndex == 63) blackCanCastleShort = false;
+
+            var movingPiece = Tiles[startingIndex];
+
+            Tiles[startingIndex] = -1;
+
+            Tiles[targetIndex] = movingPiece;
+
+            hasChanged = true;
+
+            if (whitesMove) { whitesMove = false; }
+            else { whitesMove = true; }
         }
 
         if (displayPosition != activePosition)
@@ -1597,5 +1600,6 @@ public class Board
         }
 
         pastMoves.Add(GenerateFEN());
+        return true;
     }
 }

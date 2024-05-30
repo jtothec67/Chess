@@ -5,8 +5,11 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
     private new SpriteRenderer renderer;
-    public Color defaultCol;
+    private Color defaultCol;
     public int tileIndex;
+    public float redHighlightStrength;
+
+    private bool highlighted;
 
     // Start is called before the first frame update
     void Start()
@@ -23,15 +26,42 @@ public class Tile : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (Board.tileSelected == tileIndex)
-        //{
-        //    Vector4 newCol = new Vector4(defaultCol.r + 0.1f, defaultCol.g + 0.1f, defaultCol.b + 0.1f, 255f);
-        //    renderer.color = newCol;
-        //}
-        //else
-        //{
-        //    renderer.color = defaultCol;
-        //}
+        if (highlighted)
+        {
+            Vector4 newCol = new Vector4((((defaultCol.r * 255.0f) * redHighlightStrength)) / 255.0f, ((defaultCol.g * 255.0f) * (1 - (redHighlightStrength - 1))) / 255.0f, ((defaultCol.b * 255.0f) * (1 - (redHighlightStrength - 1))) / 255.0f, 255.0f);
+            renderer.color = newCol;
+        }
+        else
+        {
+            renderer.color = defaultCol;
+        }
+
+        if (Board.hasChanged)
+        {
+            highlighted = false;
+        }
+    }
+
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(1))
+        {
+            Board.mouseDownHighlight = tileIndex;
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Board.mouseUpHighlight = tileIndex;
+
+            // Right clicked on the same tile
+            if (Board.mouseDownHighlight == tileIndex)
+            {
+                highlighted = !highlighted;
+
+                Board.mouseDownHighlight = -1;
+                Board.mouseUpHighlight = -1;
+            }
+        }
     }
 
     void OnMouseDown()

@@ -9,6 +9,9 @@ public class GraphicalBoard : MonoBehaviour
 
     public GameObject highlightPrefab;
 
+    public GameObject arrowBodyPrefab;
+    public GameObject arrowHeadPrefab;
+
     public Color lightCol;
     public Color darkCol;
 
@@ -95,49 +98,6 @@ public class GraphicalBoard : MonoBehaviour
             }
         }
 
-        if (isDragging)
-        {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            draggedPiece.transform.position = new Vector3(mousePosition.x, mousePosition.y, -3f);
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            Destroy(draggedPiece);
-            draggedPiece = null;
-            pieceTileBeingDragged = -1;
-
-            isDragging = false;
-            Board.hasChanged = true;
-        }
-
-        if (Board.hasChanged)
-        {
-            Board.hasChanged = false;
-
-            GameObject[] pieces = GameObject.FindGameObjectsWithTag("Piece");
-
-            foreach (GameObject piece in pieces)
-            {
-                Destroy(piece);
-            }
-
-            if (Board.whitesMove) gameText.text = "White to move";
-            else gameText.text = "Black to move";
-
-            for (int i = 0; i < Board.Tiles.Length; i++)
-            {
-                if (i == pieceTileBeingDragged) continue;
-                DisplayPiece(Board.Tiles[i], i);
-            }
-
-            Checkmate();
-
-            if (Board.displayPosition == Board.activePosition) currentPosText.SetActive(true);
-            else currentPosText.SetActive(false);
-        }
-
         if (!justHighlighted && Board.tileSelected != -1)
         {
             justHighlighted = true;
@@ -156,7 +116,131 @@ public class GraphicalBoard : MonoBehaviour
             justHighlighted = false;
         }
 
+        if (isDragging)
+        {
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            draggedPiece.transform.position = new Vector3(mousePosition.x, mousePosition.y, -3f);
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            Destroy(draggedPiece);
+            draggedPiece = null;
+            pieceTileBeingDragged = -1;
+
+            isDragging = false;
+            Board.hasChanged = true;
+        }
+
         tileLastSelected = Board.tileSelected;
+    }
+
+    void LateUpdate()
+    {
+        if (Input.GetMouseButtonUp(1))
+        {
+            // User trying to draw arrow
+            if (Board.mouseDownHighlight != Board.mouseUpHighlight)
+            {
+                DrawArrow();
+
+                Board.mouseDownHighlight = -1;
+                Board.mouseUpHighlight = -1;
+            }
+        }
+
+        if (Board.hasChanged)
+        {
+            Board.hasChanged = false;
+
+            GameObject[] pieces = GameObject.FindGameObjectsWithTag("Piece");
+
+            foreach (GameObject piece in pieces)
+            {
+                Destroy(piece);
+            }
+
+            GameObject[] arrows = GameObject.FindGameObjectsWithTag("Arrow");
+
+            foreach (GameObject arrow in arrows)
+            {
+                Destroy(arrow);
+            }
+
+            if (Board.whitesMove) gameText.text = "White to move";
+            else gameText.text = "Black to move";
+
+            for (int i = 0; i < Board.Tiles.Length; i++)
+            {
+                if (i == pieceTileBeingDragged) continue;
+                DisplayPiece(Board.Tiles[i], i);
+            }
+
+            Checkmate();
+
+            currentPosText.SetActive(Board.displayPosition == Board.activePosition);
+        }
+    }
+
+    public void DrawArrow()
+    {
+        bool exists = false;
+
+        GameObject[] arrows = GameObject.FindGameObjectsWithTag("Arrow");
+
+        foreach (GameObject arrow in arrows)
+        {
+            ArrowInfo arrowTestInfo = arrow.GetComponent<ArrowInfo>();
+
+            // Arrow is already on these squares
+            if (arrowTestInfo.startTile == Board.mouseDownHighlight && arrowTestInfo.endTile == Board.mouseUpHighlight)
+            {
+                Destroy(arrow);
+                exists = true;
+            }
+        }
+
+        if (exists) return;
+
+        Vector3 downToUpDir = (graphicSquares[Board.mouseUpHighlight].transform.position - graphicSquares[Board.mouseDownHighlight].transform.position).normalized;
+        Vector3 offset = downToUpDir * 0.1f;
+
+        var arrowHead = Instantiate(arrowHeadPrefab, null);
+        ArrowInfo arrowInfo = arrowHead.GetComponent<ArrowInfo>();
+        arrowInfo.startTile = Board.mouseDownHighlight;
+        arrowInfo.endTile = Board.mouseUpHighlight;
+
+        arrowHead.transform.position = graphicSquares[Board.mouseUpHighlight].transform.position - offset;
+
+        Vector3 direction = graphicSquares[Board.mouseUpHighlight].transform.position - graphicSquares[Board.mouseDownHighlight].transform.position;
+        Quaternion rotation = Quaternion.LookRotation(direction);
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+        arrowHead.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+
+        arrowHead.transform.position = new Vector3(arrowHead.transform.position.x, arrowHead.transform.position.y, -4f);
+
+        var arrowBody = Instantiate(arrowBodyPrefab, null);
+        arrowInfo = arrowBody.GetComponent<ArrowInfo>();
+        arrowInfo.startTile = Board.mouseDownHighlight;
+        arrowInfo.endTile = Board.mouseUpHighlight;
+
+        arrowBody.transform.position = (graphicSquares[Board.mouseDownHighlight].transform.position + graphicSquares[Board.mouseUpHighlight].transform.position - (downToUpDir * 1f)) / 2;
+
+        direction = graphicSquares[Board.mouseUpHighlight].transform.position - arrowBody.transform.position;
+        rotation = Quaternion.LookRotation(direction);
+        angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+        arrowBody.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+
+        float distance = Vector3.Distance(graphicSquares[Board.mouseUpHighlight].transform.position, graphicSquares[Board.mouseDownHighlight].transform.position);
+        Vector3 rescale = arrowBody.transform.localScale;
+        float newY = distance - 1.19f;
+        if (newY < 0.7f) newY = 0f;
+        rescale.y = newY;
+        
+        arrowBody.transform.localScale = rescale;
+
+        arrowBody.transform.position = new Vector3(arrowBody.transform.position.x, arrowBody.transform.position.y, -4f);
     }
 
     public void BackAMove()

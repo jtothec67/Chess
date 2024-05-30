@@ -273,8 +273,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b230a6464c2a77949aabfb9f95f9bec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCol: {r: 0, g: 0, b: 0, a: 0}
   tileIndex: 0
+  redHighlightStrength: 1.35
 --- !u!61 &-3435021297288687510
 BoxCollider2D:
   m_ObjectHideFlags: 0

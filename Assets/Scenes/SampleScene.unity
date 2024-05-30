@@ -984,6 +984,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   squarePrefab: {fileID: 1373328117534223338, guid: 0d386a98bf8b7474e93662cc1d53dec1, type: 3}
   highlightPrefab: {fileID: 6278910096077087169, guid: 3a5aea05e0aeee143881c6d1fade978b, type: 3}
+  arrowBodyPrefab: {fileID: 7111968579764963685, guid: 5357cdac53a89ca4daa13b7c2f2f8a93, type: 3}
+  arrowHeadPrefab: {fileID: 7501356300703888714, guid: 51eb63c0f91d6dd4faa9d0243dec441f, type: 3}
   lightCol: {r: 0.91372555, g: 0.9294118, b: 0.8000001, a: 1}
   darkCol: {r: 0.46666667, g: 0.6, b: 0.32941177, a: 1}
   gameText: {fileID: 182579661}

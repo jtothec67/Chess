@@ -14,10 +14,12 @@ public class Board
     public static int[] Tiles = new int[64];
     public static int[] tempTiles = new int[64];
 
-    public static bool pieceSelected = false;
     public static int tileSelected = -1;
     public static int mouseDownTile = -1;
     public static int mouseUpTile = -1;
+
+    public static int mouseDownHighlight = -1;
+    public static int mouseUpHighlight = -1;
 
     public static bool whitesMove = true;
 

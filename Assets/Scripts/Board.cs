@@ -134,18 +134,21 @@ public class Board
             }
         }
 
-        if (Tiles[4] % 8 != 1 || (Tiles[4] >> 3) != 1) { whiteCanCastleShort = false; whiteCanCastleLong = false; }
-        else { whiteCanCastleShort = true; whiteCanCastleLong = true; }
-        if (Tiles[60] % 8 != 1 || (Tiles[60] >> 3) != 2) { blackCanCastleShort = false; blackCanCastleLong = false; }
-        else { blackCanCastleShort = true; blackCanCastleLong = true; }
-        if (Tiles[0] % 8 != 5 || (Tiles[0] >> 3) != 1) { whiteCanCastleLong = false; }
-        else { whiteCanCastleLong = true; }
-        if (Tiles[7] % 8 != 5 || (Tiles[7] >> 3) != 1) { whiteCanCastleShort = false; }
-        else { whiteCanCastleShort = true; }
-        if (Tiles[56] % 8 != 5 || (Tiles[56] >> 3) != 2) { blackCanCastleLong = false; }
-        else { blackCanCastleLong = true; }
-        if (Tiles[63] % 8 != 5 || (Tiles[63] >> 3) != 1) { blackCanCastleShort = false; }
-        else { blackCanCastleShort = true; }
+        // White king and white rook on a1
+        if ((Tiles[4] % 8 == 1 && (Tiles[4] >> 3) == 1) && (Tiles[0] % 8 == 5 && (Tiles[0] >> 3) == 1)) { whiteCanCastleLong = true; }
+        else { whiteCanCastleLong = false;}
+
+        // White king and white rook on h1
+        if ((Tiles[4] % 8 == 1 && (Tiles[4] >> 3) == 1) && (Tiles[7] % 8 == 5 && (Tiles[7] >> 3) == 1)) { whiteCanCastleShort = true; }
+        else { whiteCanCastleShort = false; }
+
+        // Black king and black rook on a8
+        if ((Tiles[60] % 8 == 1 && (Tiles[60] >> 3) == 2) && (Tiles[56] % 8 == 5 && (Tiles[56] >> 3) == 2)) { blackCanCastleLong = true; }
+        else { blackCanCastleLong = false; }
+
+        // Black king and black rook on h8
+        if ((Tiles[60] % 8 == 1 && (Tiles[60] >> 3) == 2) && (Tiles[63] % 8 == 5 && (Tiles[63] >> 3) == 2)) { blackCanCastleShort = true; }
+        else { blackCanCastleShort = false; }
 
         hasChanged = true;
     }
@@ -653,8 +656,8 @@ public class Board
                 return possibleMoves;
             }
         }
-            possibleMoves[currentArrayPos] = -1;
-            return possibleMoves;
+        possibleMoves[currentArrayPos] = -1;
+        return possibleMoves;
     }
 
     public static int[] GetSquaresAttacked(int position, bool whiteToAttack)
@@ -1480,7 +1483,7 @@ public class Board
             Tiles[targetIndex] = movingPiece;
 
 
-            var movingRook = Tiles[startingIndex +3];
+            var movingRook = Tiles[startingIndex + 3];
 
             Tiles[startingIndex + 3] = -1;
 
@@ -1565,16 +1568,16 @@ public class Board
         }
         else
         {
-            if (whitesMove && Tiles[startingIndex] % 8 == 1) whiteCanCastleShort = false; whiteCanCastleLong = false;
-            if (!whitesMove && Tiles[startingIndex] % 8 == 1) blackCanCastleShort = false; blackCanCastleLong = false;
-            if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 0) whiteCanCastleLong = false;
-            if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 7) whiteCanCastleShort = false;
-            if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 56) blackCanCastleLong = false;
-            if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 63) blackCanCastleShort = false;
-            if (targetIndex == 0) whiteCanCastleLong = false;
-            if (targetIndex == 7) whiteCanCastleShort = false;
-            if (targetIndex == 56) blackCanCastleLong = false;
-            if (targetIndex == 63) blackCanCastleShort = false;
+            if (whitesMove && Tiles[startingIndex] % 8 == 1) { whiteCanCastleShort = false; whiteCanCastleLong = false; }
+            if (!whitesMove && Tiles[startingIndex] % 8 == 1) { blackCanCastleShort = false; blackCanCastleLong = false; }
+        if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 0) { whiteCanCastleLong = false; }
+        if (whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 7) { whiteCanCastleShort = false; }
+        if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 56) { blackCanCastleLong = false; }
+        if (!whitesMove && Tiles[startingIndex] % 8 == 5 && startingIndex == 63) { blackCanCastleShort = false; }
+            if (targetIndex == 0) { whiteCanCastleLong = false; }
+            if (targetIndex == 7) { whiteCanCastleShort = false; }
+            if (targetIndex == 56) { blackCanCastleLong = false; }
+            if (targetIndex == 63) { blackCanCastleShort = false; }
 
             var movingPiece = Tiles[startingIndex];
 
